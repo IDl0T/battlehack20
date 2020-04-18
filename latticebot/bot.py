@@ -88,11 +88,13 @@ def overlord():
     # decide
     offset = turn_number // (board_size // 2) % 2
     col = (turn_number * 2 + offset) % board_size
+    while try_check_space(base, col) != False:
+        col = (col + 1) % board_size
+        if col == (turn_number * 2 + offset) % board_size:
+            break
     if try_check_space(base, col) == False:
         spawn(base, col)
-        dlog("spawn sucessful")
-    else:
-        dlog("spawn unsucessful")
+
 
     # exit
     turn_number += 1

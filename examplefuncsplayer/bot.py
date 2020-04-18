@@ -8,7 +8,8 @@ from battlehack20.stubs import *
 DEBUG = 1
 def dlog(str):
     if DEBUG > 0:
-        log(str)
+        #log(str)
+        pass
 
 
 def check_space_wrapper(r, c, board_size):

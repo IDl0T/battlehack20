@@ -36,11 +36,16 @@ def try_check_space(r, c):
 
 def try_move_forward():
     r, c = get_location()
-    if r < 0 or c < 0 or c >= board_size or r >= board_size:
-        return None
     if try_check_space(r + forward, c) == False:
         move_forward()
 
+def try_capture(r, c):
+    if try_check_space(r, c) == opp_team:
+        capture(r, c)
+
+def no_suicide():
+    r, c = get_location()
+    return not (try_check_space(r + 2 * forward, c - 1) == opp_team or try_check_space(r + 2 * forward, c + 1) == opp_team)
 
 def pawn():
     # init
@@ -56,7 +61,11 @@ def pawn():
     row, col = get_location()
 
     # decide
-    if turn_left_to_move <= 0:
+    if try_check_space(row + forward, col - 1):
+        try_capture(row + forward, col - 1)
+    elif try_check_space(row + forward, col + 1):
+        try_capture(row + forward, col + 1)
+    elif turn_left_to_move <= 0 and no_suicide():
         try_move_forward()
         turn_left_to_move = board_size // 2
 

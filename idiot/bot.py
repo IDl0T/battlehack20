@@ -1,4 +1,4 @@
-import random
+import random, math
 
 from battlehack20.stubs import *
 
@@ -12,6 +12,10 @@ def dlog(str):
     if DEBUG > 0:
         log(str)
 
+def safeMove(row,col,forward):
+    if not check_space_wrapper(row + forward, col, board_size):
+        move_forward()
+
 
 def check_space_wrapper(r, c, board_size):
     # check space, except doesn't hit you with game errors
@@ -23,15 +27,24 @@ def check_space_wrapper(r, c, board_size):
         return None
 
 def pawn():
+
     #Test pawn lattice
     global board_size, team, opp_team, robottype, time
     row, col = get_location()
 
     #Generate local board
+    #[row][col]
     board = [[check_space_wrapper(r,c,board_size) for c in range(col-2,col+3)] for r in range(row-2,row+3)]
     if team == Team.BLACK:
-        for i in range(5):
-            board[i].reverse()
+        board.reverse()
+    
+    for i in range(5):
+        temp = board[i]
+        #Map function not allowed
+        for j in range(5):
+            temp[j] = str(temp[j])
+        dlog(" ".join(temp))
+        
 
     if team == Team.WHITE:
         forward = 1
@@ -42,16 +55,15 @@ def pawn():
     if board[3][3] == opp_team: # up and right
         capture(row + forward, col + 1)
         #dlog('Captured at: (' + str(row + forward) + ', ' + str(col + 1) + ')')
-    elif board[1][3] == opp_team: # up and left
+    elif board[3][1] == opp_team: # up and left
         capture(row + forward, col - 1)
         #dlog('Captured at: (' + str(row + forward) + ', ' + str(col - 1) + ')')
     # If there is a pawn on both left and right, then try to move forward
-    elif board[1][2] == board[2][2] and board[2][2] == board[3][2]:
-        move_forward()
+    elif board[2][1] == board[2][2] and board[2][2] == board[2][3]:
+        safeMove(row,col,forward)
     #Or if there is a pawn behind
-    elif board[2][1] == board[2][2]:
-        move_forward()
-
+    elif board[1][2] == board[2][2]:
+        safeMove(row,col,forward)
     
 
 def overlord():
@@ -62,27 +74,39 @@ def overlord():
         board.reverse()
 
     #Find if generate on even or odd
-    latticeColor = ((time-1)//(board_size//2)) % 2
+    #latticeColor = ((time-1)//(board_size//2)) % 2
 
 
     #Select a square to generate
 
-    spawned = False
-    for column in range(latticeColor,board_size,2):
+    #Calculate a relative power for each column
+    relativePower = [math.inf for col in range(board_size)]
+    for column in range(board_size):
         if board[0][column] != None:
             continue
-        if (team == team.BLACK):
-            spawn(board_size-1,column)
-        else:
-            spawn(0,column)
-        spawned = True
-        break
-    
-    if not spawned:
-        for column in range(board_size):
-            if board[0][column] != None:
-                continue
-            if (team == team.BLACK):
+        relativePower[column] = 0.0
+        for row in range(board_size):
+            if board[row][column] == team:
+                relativePower[column] = relativePower[column] + 1.0
+            elif board[row][column] == opp_team:
+                relativePower[column] = relativePower[column] - 1.0
+
+    copyRelativePower = relativePower[:]
+    for column in range(board_size): 
+        if column > 0 and copyRelativePower[column-1] != math.inf:
+            relativePower[column] = relativePower[column] + copyRelativePower[column-1] * 0.2
+        if column < board_size-1 and copyRelativePower[column-1] != math.inf:
+            relativePower[column] = relativePower[column] + copyRelativePower[column+1] * 0.2
+
+    #Find a minimum relative power and generate there
+    minimumPower = math.inf
+    for power in relativePower:
+        if power < minimumPower:
+            minimumPower = power
+
+    for column in range(board_size):
+        if relativePower[column] == minimumPower:
+            if team == Team.BLACK:
                 spawn(board_size-1,column)
             else:
                 spawn(0,column)

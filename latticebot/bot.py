@@ -66,7 +66,6 @@ def pawn():
     elif try_check_space(row + forward, col + 1) == opp_team:
         try_capture(row + forward, col + 1)
     elif turn_left_to_move <= -1 * board_size:
-        dlog("extra move invoked")
         try_move_forward()
         turn_left_to_move += board_size // 2
     elif turn_left_to_move <= 0 and no_suicide():
@@ -75,7 +74,6 @@ def pawn():
 
     # exit
     turn_left_to_move -= 1
-    dlog("turn_left_to_move = " + str(turn_left_to_move))
 
 
 def overlord():
@@ -110,9 +108,7 @@ def turn():
     This function will be called at the beginning of every turn and should contain the bulk of your robot commands
     """
 
-    team = get_team()
     robottype = get_type()
-    # dlog('Team: ' + str(team) + ' Type: ' + str(robottype))
 
     if robottype == RobotType.PAWN:
         pawn()
@@ -120,4 +116,3 @@ def turn():
         overlord()
 
     bytecode = get_bytecode()
-    # dlog('Done! Bytecode left: ' + str(bytecode))

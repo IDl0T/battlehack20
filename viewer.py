@@ -47,7 +47,7 @@ labelArr = []
 for r in range(n):
     labelArr.append([])
     for c in range(n):
-        label = Label(root,text="    ",padding="10",relief=RAISED)
+        label = Label(root,text="     ",padding="10",relief=RAISED)
         label.grid(row=r,column=c)
         labelArr[-1].append(label)
 
@@ -62,9 +62,18 @@ counter = 0
 def refresh(event):
     global counter,processedData, labelArr, n
     print(counter)
+    if counter >= len(processedData):
+        return
     for r in range(n):
         for c in range(n):
-            labelArr[r][c].configure(text=processedData[counter][r][c])
+            target = processedData[counter][r][c]
+            if target == 0:
+                target = "     "
+            if target == 1:
+                target = "  1  "
+            if target == 2:
+                target = "  2  "
+            labelArr[r][c].configure(text=target)
     counter += 1
     print("Refresh done")
     return

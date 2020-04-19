@@ -6,7 +6,7 @@ from battlehack20.stubs import *
 #=================== GlOBAL CODE ===================#
 
 board_size, team, opp_team, robottype, latticeThickness, init = 0,0,0,0,0,0
-defenseLattice = []
+defenseLattice,board = [],[]
 
 DEBUG = 1
 def dlog(str):
@@ -48,6 +48,7 @@ row, col, forward = 0,0,1
 pawnState = "Defending"
 
 def pawnCheckSpace(r, c, board_size):
+
     try:
         #dlog(str(r))
         #dlog(str(c))
@@ -62,11 +63,35 @@ def pawnCheckSpace(r, c, board_size):
         return False
 
 def safeMove():
-    #TODO: Make sure pawn doesn't move if it is unsupported and walking into danger zone
-    #dlog(str(row))
-    #dlog(str(col))
-    if pawnCheckSpace(row + forward, col, board_size) == None:
-        move_forward()
+    global board
+
+    #Don't move forward if not possible
+    if board[3][2] != None:
+        return False
+
+    numSupport = 0
+    numDanger = 0
+    #Compare personal support and danger
+    if board[4][1] == opp_team:
+        numDanger+=1
+    if board[4][3] == opp_team:
+        numDanger+=1
+    if board[2][1] == team:
+        numSupport +=1
+    if board[2][3] == team:
+        numSupport +=1
+    if numDanger > 0 and numSupport == 0:
+        return False
+
+    #Don't move forward when acting as support
+    if board[3][1] == team and board[4][2] == opp_team:
+        return False
+    if board[3][3] == team and board[4][2] == opp_team:
+        return False
+
+    move_forward()
+    return True
+    
 
 def pawnInit():
     global board_size, team, opp_team, robottype, defenseLattice, forward
@@ -79,7 +104,7 @@ def pawnInit():
         forward = -1
 
 def pawnTurn():
-    global board_size, team, opp_team, robottype, row, col, init, forward, pawnState
+    global board,board_size, team, opp_team, robottype, row, col, init, forward, pawnState
     #Init
     if init == 0:
         init == 1
@@ -177,9 +202,9 @@ def overlordTurn():
     copyRelativePower = relativePower[:]
     for column in range(board_size): 
         if column > 0 and copyRelativePower[column-1][0] != math.inf:
-            relativePower[column][0] = relativePower[column][0] + copyRelativePower[column-1][0] * 0.2
+            relativePower[column][0] = relativePower[column][0] + copyRelativePower[column-1][0] * 1
         if column < board_size-1 and copyRelativePower[column-1][0] != math.inf:
-            relativePower[column][0] = relativePower[column][0] + copyRelativePower[column+1][0] * 0.2
+            relativePower[column][0] = relativePower[column][0] + copyRelativePower[column+1][0] * 1
     
     #In order of minimum power, check if defense lattice is not finished.
     relativePower.sort()
@@ -234,7 +259,9 @@ def overlordTurn():
                     return
     
     #If can't build attack pillar, build an extra pawn in the weakest column
-    #TODO: Do it
+    for col in range(supportColumn-1,-1,-1):
+        if (trySpawn(r,targetColumn)):
+            return
     
     
 

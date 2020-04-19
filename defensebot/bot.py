@@ -159,14 +159,27 @@ def pawnTurn():
 time = 0
 
 def trySpawn(row,col):
+    #Make sure that not spawning on dangerous position
+    if row == 0:
+        if col > 0:
+            if check_space(1,col-1) == opp_team:
+                return False
+        if col < board_size-1:
+            if check_space(1,col+1) == opp_team:
+                return False
+    if row == board_size-1:
+        if col > 0:
+            if check_space(board_size-2,col-1) == opp_team:
+                return False
+        if col < board_size-1:
+            if check_space(board_size-2,col+1) == opp_team:
+                return False
 
-    if check_space(row,col) == False:
-        try:
-            spawn(row,col)
-            return True
-        except:
-            return False
-    return False
+    try:
+        spawn(row,col)
+        return True
+    except:
+        return False
 
     
 
@@ -204,12 +217,19 @@ def overlordTurn():
             elif board[row][column] == opp_team:
                 relativePower[column][0] = relativePower[column][0] - 1.0
 
-    copyRelativePower = relativePower[:]
+    #dlogPowerArray(relativePower)
+
+    copyRelativePower = []
+    for i in relativePower:
+        copyRelativePower.append(i[0])
+
     for column in range(board_size): 
-        if column > 0 and copyRelativePower[column-1][0] != math.inf:
-            relativePower[column][0] = relativePower[column][0] + copyRelativePower[column-1][0] * 1
-        if column < board_size-1 and copyRelativePower[column-1][0] != math.inf:
-            relativePower[column][0] = relativePower[column][0] + copyRelativePower[column+1][0] * 1
+        if column > 0 and copyRelativePower[column-1] != math.inf:
+            relativePower[column][0] = relativePower[column][0] + copyRelativePower[column-1] * 1
+        if column < board_size-1 and copyRelativePower[column+1] != math.inf:
+            relativePower[column][0] = relativePower[column][0] + copyRelativePower[column+1] * 1
+    
+    #dlogPowerArray(relativePower)
     
     #In order of minimum power, check if defense lattice is not finished.
     relativePower.sort()

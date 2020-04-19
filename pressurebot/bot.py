@@ -24,6 +24,12 @@ def dlog(str):
     if DEBUG > 0:
         log(str)
 
+def sum(lst):
+    out = 0
+    for i in lst:
+        out += i
+    return out
+
 def random_index(rate):
     start = 0
     index = 0
@@ -144,14 +150,16 @@ def get_spawnrate():
     spawnrate = [0 for i in range(board_size)]
     for c in range(board_size):
         if board[enemybase][c] != ally:
-            spawnrate[c] = 1
+            spawnrate[c] = spawnrate[c] + 1
         for r in range(board_size):
             if board[r][c] == enemy:
                 if c - 1 >= 0:
-                    spawnrate[c - 1] = 1
+                    spawnrate[c - 1] = spawnrate[c - 1] + 1
                 if c + 1 < board_size:
-                    spawnrate[c + 1] = 1
+                    spawnrate[c + 1] = spawnrate[c + 1] + 1
                 break # save computation
+
+
 
     return spawnrate
 
@@ -169,16 +177,27 @@ def overlord():
     board = get_board()
 
     # decide
-    # spawn a pawn, no clogging
+    # spawn according to prob distribution
+    spawned = False
     spawnrate = get_spawnrate()
-    n = 0
-    while spawnrate[turn_number % board_size] == 0 or not try_check_space(base, turn_number % board_size) == False:
-        n += 1
-        turn_number += 1
-        if n == board_size:
-            break 
-    if spawnrate[turn_number % board_size] > 0 and try_check_space(base, turn_number % board_size) == False:
-        spawn(base, turn_number % board_size)
+    for i in range(100):
+        candidate = random_index(spawnrate)
+        dlog("try to spawn in col " + str(candidate))
+        if try_check_space(base, candidate) == False:
+            spawn(base, candidate)
+            spawned = True
+            break
+
+    # alternative spawn
+    if not spawned:
+        n = 0
+        while spawnrate[turn_number % board_size] == 0 or not try_check_space(base, turn_number % board_size) == False:
+            n += 1
+            turn_number += 1
+            if n == board_size:
+                break 
+        if spawnrate[turn_number % board_size] > 0 and try_check_space(base, turn_number % board_size) == False:
+            spawn(base, turn_number % board_size)
 
     # exit
     turn_number += 1

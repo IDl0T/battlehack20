@@ -149,7 +149,7 @@ def pawnTurn():
             return
     
     if pawnState =="Attacking":
-        if board[1][2] == team:
+        if board[1][2] == team and board[0][2] == team:
             safeMove()
             return
     
@@ -180,6 +180,8 @@ def trySpawn(row,col):
         return True
     except:
         return False
+
+    
 
 def overlordInit():
     global board_size, team, opp_team, robottype, time, defenseLattice
@@ -253,37 +255,11 @@ def overlordTurn():
         if (trySpawn(r,col)):
             return
     
-    #If defense lattice has been finished, build attack pillar on rightmost position
-    #Hence the name, pillar bot
+    #If defense lattice has been finished, build bot on the weakest lane
+    #Hence the name, defense bot
 
-    targetColumn = 1
-    for column in range(board_size-1,0,-1):
-        if board[board_size-1][column] != team:
-            targetColumn = column
-            break
-    
-    supportColumn = targetColumn - 1
-
-    if board[0][supportColumn] != None and board[0][targetColumn] == None:
-        if (trySpawn(r,targetColumn)):
-            return
-        
-    if board[0][targetColumn] != None and board[0][supportColumn] == None:
-        if (trySpawn(r,supportColumn)):
-            return
-
-    if board[0][targetColumn] == None and board[0][supportColumn] == None:
-        for row in range(1,board_size):
-            if board[row][targetColumn] == None or board[row][supportColumn] == opp_team:
-                if (trySpawn(r,targetColumn)):
-                    return
-            if board[row][supportColumn] == None or board[row][targetColumn] == opp_team:
-                if (trySpawn(r,supportColumn)):
-                    return
-    
-    #If can't build attack pillar, build an extra pawn in the weakest column
-    for col in range(supportColumn-1,-1,-1):
-        if (trySpawn(r,targetColumn)):
+    for column in relativePower:
+        if (trySpawn(r,column[1])):
             return
     
     

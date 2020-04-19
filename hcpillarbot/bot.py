@@ -18,21 +18,16 @@ def dlogArray(arr):
         arr[i] = str(arr[i])
     dlog(" ".join(arr))
 
+def dlogPowerArray(arr):
+    new = []
+    for col in arr:
+        new.append(col[0])
+    dlogArray(new)
+
 #Returns a 2 - 3 thick lattice depending on the map size
 def generateDefenseLattice():
     global latticeThickness
     res = [[False for c in range(board_size)]for r in range(board_size)]
-
-    #Sparce lattice
-    #TODO: Unbug this
-    '''latticeThickness = 2
-    #Generate 3 thick lattice if board size > 10
-    if board_size > 10:
-        latticeThickness = 3
-
-    for row in range(latticeThickness):
-        for col in range(row%2,board_size,2):
-            res[row][col] = True'''
 
     #Thic lattice
     for row in range(1,3):
@@ -126,17 +121,8 @@ def pawnTurn():
     elif board[3][1] == opp_team: # up and left
         capture(row + forward, col - 1)
         return
-    
-    
-    #Decisions
-    #TODO: Unbug the generateLattice and then unbug this
-    '''
-    if myRow >= latticeThickness:
-        pawnState = "Attacking"
-    if myRow == latticeThickness - 1 and defenseLattice[myRow][col] == False:
-        pawnState = "Attacking"
-    '''
 
+    #Decisions
     if myRow >= 3:
         pawnState="Attacking"
     
@@ -149,7 +135,7 @@ def pawnTurn():
             return
     
     if pawnState =="Attacking":
-        if board[1][2] == team:
+        if board[1][2] == team and board[0][2] == team:
             safeMove()
             return
     
@@ -228,7 +214,7 @@ def overlordTurn():
             relativePower[column][0] = relativePower[column][0] + copyRelativePower[column+1] * 1
     
     #dlogPowerArray(relativePower)
-    
+
     #In order of minimum power, check if defense lattice is not finished.
     relativePower.sort()
 
@@ -253,39 +239,17 @@ def overlordTurn():
         if (trySpawn(r,col)):
             return
     
-    #If defense lattice has been finished, build attack pillar on rightmost position
-    #Hence the name, pillar bot
-
+    #If defense lattice has been finished, build attack pillar on right half of the map
+    #Hence name, half court bot
     targetColumn = 1
-    for column in range(board_size-1,0,-1):
-        if board[board_size-1][column] != team:
-            targetColumn = column
-            break
+    for column in relativePower:
+        col = column[1]
+        if col >= board_size//2-1:
+            trySpawn(r,col)
     
-    supportColumn = targetColumn - 1
-
-    if board[0][supportColumn] != None and board[0][targetColumn] == None:
-        if (trySpawn(r,targetColumn)):
-            return
-        
-    if board[0][targetColumn] != None and board[0][supportColumn] == None:
-        if (trySpawn(r,supportColumn)):
-            return
-
-    if board[0][targetColumn] == None and board[0][supportColumn] == None:
-        for row in range(1,board_size):
-            if board[row][targetColumn] == None or board[row][supportColumn] == opp_team:
-                if (trySpawn(r,targetColumn)):
-                    return
-            if board[row][supportColumn] == None or board[row][targetColumn] == opp_team:
-                if (trySpawn(r,supportColumn)):
-                    return
-    
-    #If can't build attack pillar, build an extra pawn in the weakest column
-    for col in range(supportColumn-1,-1,-1):
-        if (trySpawn(r,targetColumn)):
-            return
-    
+    #And just build somewhere if somehow that fails
+    for col in range(board_size):
+        trySpawn(r,col)
     
 
 #=================== TURN CODE ===================#

@@ -56,11 +56,35 @@ for r in range(n):
 #print(len(processedData[0]))
 #print(len(processedData[0][0]))
 
-counter = 0
+counter = -1
 
 
 def refresh(event):
     global counter,processedData, labelArr, n
+    print(counter)
+    counter += 1
+    if counter >= len(processedData):
+        return
+    for r in range(n):
+        for c in range(n):
+            target = processedData[counter][r][c]
+            if target == 0:
+                labelArr[r][c].configure(background="WHITE")
+                target = "     "
+            if target == 1:
+                target = "  1  "
+                labelArr[r][c].configure(background="BLUE")
+            if target == 2:
+                target = "  2  "
+                labelArr[r][c].configure(background="RED")
+            labelArr[r][c].configure(text=target)
+    
+    print("Refresh done")
+    return
+
+def refreshBack(event):
+    global counter,processedData, labelArr, n
+    counter = max(0,counter-1)
     print(counter)
     if counter >= len(processedData):
         return
@@ -68,16 +92,21 @@ def refresh(event):
         for c in range(n):
             target = processedData[counter][r][c]
             if target == 0:
+                labelArr[r][c].configure(background="WHITE")
                 target = "     "
             if target == 1:
                 target = "  1  "
+                labelArr[r][c].configure(background="BLUE")
             if target == 2:
                 target = "  2  "
+                labelArr[r][c].configure(background="RED")
             labelArr[r][c].configure(text=target)
-    counter += 1
     print("Refresh done")
     return
-root.bind('<Return>', refresh)
+
+root.bind('<Right>', refresh)
+root.bind('<Left>', refreshBack)
+
 root.mainloop()
 
 

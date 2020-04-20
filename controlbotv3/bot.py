@@ -6,7 +6,7 @@ from battlehack20.stubs import *
 #=================== GlOBAL CODE ===================#
 
 board_size, team, opp_team, robottype, latticeThickness, init = 0,0,0,0,0,0
-defenseLattice,board = [],[]
+board = []
 
 DEBUG = 1
 def dlog(str):
@@ -17,30 +17,6 @@ def dlogArray(arr):
     for i in range(len(arr)):
         arr[i] = str(arr[i])
     dlog(" ".join(arr))
-
-#Returns a 2 - 3 thick lattice depending on the map size
-def generateDefenseLattice():
-    global latticeThickness
-    res = [[False for c in range(board_size)]for r in range(board_size)]
-
-    #Sparce lattice
-    #TODO: Unbug this
-    '''latticeThickness = 2
-    #Generate 3 thick lattice if board size > 10
-    if board_size > 10:
-        latticeThickness = 3
-
-    for row in range(latticeThickness):
-        for col in range(row%2,board_size,2):
-            res[row][col] = True'''
-
-    #Thic lattice
-    for row in range(1,3):
-        for col in range(board_size):
-            res[row][col] = True
-    
-    return res
-
 
 #=================== PAWN CODE ===================#
 
@@ -83,21 +59,22 @@ def safeMove():
         return False
 
     #Don't move forward when acting as support
-    if board[3][1] == team and board[4][2] == opp_team:
-        return False
-    if board[3][3] == team and board[4][2] == opp_team:
-        return False
+    if board[3][1] == team:
+        if board[4][2] == opp_team or board[4][0] == opp_team:
+            return False
+    if board[3][3] == team:
+        if board[4][2] == opp_team or board[4][4] == opp_team:
+            return False
 
     move_forward()
     return True
     
 def pawnInit():
-    global board_size, team, opp_team, robottype, defenseLattice, forward
+    global board_size, team, opp_team, robottype, forward
     board_size = get_board_size()
     team = get_team()
     opp_team = Team.WHITE if team == Team.BLACK else team.BLACK
     robottype = get_type()
-    defenseLattice = generateDefenseLattice()
     if team == Team.BLACK:
         forward = -1
 
@@ -130,7 +107,7 @@ def pawnTurn():
 
 #=================== OVERLORD CODE ===================#
 
-time = 0
+time, spawnRow = 0, 0
 
 def trySpawn(row,col):
     #Make sure that not spawning on dangerous position
@@ -156,15 +133,16 @@ def trySpawn(row,col):
         return False
 
 def overlordInit():
-    global board_size, team, opp_team, robottype, time, defenseLattice
+    global board_size, team, opp_team, robottype, time, spawnRow
     board_size = get_board_size()
     team = get_team()
     opp_team = Team.WHITE if team == Team.BLACK else team.BLACK
     robottype = get_type()
-    defenseLattice = generateDefenseLattice()
+    if team == Team.BLACK:
+        spawnRow = board_size-1
 
 def overlordTurn():
-    global board_size, team, opp_team, robottype, init, time
+    global board_size, team, opp_team, robottype, init, time, spawnRow
     #Init
     if init == 0:
         init == 1
@@ -176,44 +154,12 @@ def overlordTurn():
     board = get_board()
     if team == Team.BLACK:
         board.reverse()
-
-    #Calculate a relative power for each column
-    relativePower = [[math.inf,col] for col in range(board_size)]
-    for column in range(board_size):
-        if board[0][column] != None:
-            continue
-        relativePower[column][0] = 0.0
-        for row in range(board_size):
-            if board[row][column] == team:
-                relativePower[column][0] = relativePower[column][0] + 1.0
-            elif board[row][column] == opp_team:
-                relativePower[column][0] = relativePower[column][0] - 1.0
-
-    #dlogPowerArray(relativePower)
-
-    copyRelativePower = []
-    for i in relativePower:
-        copyRelativePower.append(i[0])
-
-    for column in range(board_size): 
-        if column > 0 and copyRelativePower[column-1] != math.inf:
-            relativePower[column][0] = relativePower[column][0] + copyRelativePower[column-1] * 1
-        if column < board_size-1 and copyRelativePower[column+1] != math.inf:
-            relativePower[column][0] = relativePower[column][0] + copyRelativePower[column+1] * 1
     
-    #dlogPowerArray(relativePower)
     
-    relativePower.sort()
 
-    if team == Team.BLACK:
-        r = board_size-1
-    else:
-        r = 0
-
-    #Build pawns in weak columns
-    for column in relativePower:
-        if (trySpawn(r,column[1])):
-            return
+    
+ 
+    
     
     
     

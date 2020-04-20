@@ -182,6 +182,8 @@ def overlordTurn():
     #Calculate a relative power for each column
     relativePower = [[math.inf,col] for col in range(board_size)]
     for column in range(board_size):
+        if board[0][column] != None:
+            continue
         relativePower[column][0] = 0.0
         for row in range(board_size):
             if board[row][column] == team:
@@ -195,6 +197,8 @@ def overlordTurn():
             
             '''if row == board_size-1 and board[row][column] != team:
                 relativePower[column][0] = relativePower[column][0] - 1.0'''
+                
+
 
     copyRelativePower = []
     for i in relativePower:
@@ -219,12 +223,11 @@ def overlordTurn():
         r = board_size-1
     else:
         r = 0
-        
+
     #Build pawns in weak columns
     for column in relativePower:
         if (trySpawn(r,column[1])):
             return
-    
     
     
     

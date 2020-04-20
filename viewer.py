@@ -9,21 +9,41 @@ arr = []
 boardSize = 16
 
 dataCollectionStart = False
+dataCollectionStartRepeat = False
+dataLengthCheck = False
 
 gameRawData = []
 
+print("reading data")
+
+#count = 0
+
 for line in handle:
-    if dataCollectionStart:
+    #count += 1
+    
+    if dataCollectionStart and dataCollectionStartRepeat:
+        if len(line) == 113:
+            dataLengthCheck = True
+
+    if dataCollectionStart and dataCollectionStartRepeat and dataLengthCheck:
+        #print(count)
         if line != "\n":
+            #print(len(line))
             line = line.strip("\n")
             gameRawData[-1].append([line[i:i+7] for i in range(0, len(line), 7)])
         else:
             gameRawData.append([])
     if not dataCollectionStart and line == "\n":
         dataCollectionStart = True
+        continue
+    if dataCollectionStart and not dataCollectionStartRepeat and line == "\n":
+        dataCollectionStartRepeat = True
         gameRawData.append([])
 
+
 processedData = []
+
+print("processing data")
 
 for turn in gameRawData:
     processedData.append([])
@@ -38,6 +58,9 @@ for turn in gameRawData:
 
 n = len(processedData[0])
 
+print("showing data")
+
+
 #Gui
 
 root = Tk()
@@ -51,12 +74,13 @@ for r in range(n):
         label.grid(row=r,column=c)
         labelArr[-1].append(label)
 
-#print(labelArr)
+
 
 #print(len(processedData[0]))
 #print(len(processedData[0][0]))
 
 counter = -1
+
 
 
 def refresh(event):

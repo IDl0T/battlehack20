@@ -70,7 +70,7 @@ labelArr = []
 for r in range(n):
     labelArr.append([])
     for c in range(n):
-        label = Label(root,text="     ",padding="10",relief=RAISED)
+        label = Label(root,text="            ",padding="10",relief=RAISED)
         label.grid(row=r,column=c)
         labelArr[-1].append(label)
 
@@ -90,6 +90,8 @@ counter = -1
 
 def refresh(event):
     global counter,processedData, labelArr, n, bluePawnLabel,redPawnLabel
+    if counter >= len(processedData)-1:
+        return
     print(counter)
     counter += 1
     blue = 0
@@ -101,13 +103,13 @@ def refresh(event):
             target = processedData[counter][r][c]
             if target == 0:
                 labelArr[r][c].configure(background="WHITE")
-                target = "     "
+                target = "       "
             if target == 1:
-                target = "  1  "
+                target = gameRawData[counter][r][c]
                 blue += 1
                 labelArr[r][c].configure(background="BLUE")
             if target == 2:
-                target = "  2  "
+                target = gameRawData[counter][r][c]
                 red += 1
                 labelArr[r][c].configure(background="RED")
             labelArr[r][c].configure(text=target)
@@ -118,6 +120,8 @@ def refresh(event):
 
 def refreshBack(event):
     global counter,processedData, labelArr, n
+    if counter == 0:
+        return
     counter = max(0,counter-1)
     print(counter)
     if counter >= len(processedData):
@@ -127,12 +131,12 @@ def refreshBack(event):
             target = processedData[counter][r][c]
             if target == 0:
                 labelArr[r][c].configure(background="WHITE")
-                target = "     "
+                target = "        "
             if target == 1:
-                target = "  1  "
+                target = gameRawData[counter][r][c]
                 labelArr[r][c].configure(background="BLUE")
             if target == 2:
-                target = "  2  "
+                target = gameRawData[counter][r][c]
                 labelArr[r][c].configure(background="RED")
             labelArr[r][c].configure(text=target)
     print("Refresh done")

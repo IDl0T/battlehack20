@@ -60,7 +60,7 @@ def smart_move():
                 score += 1
     if board[4][1] == enemy:
         score -= 3
-        if board[4][2] == ally or board[4][0] == ally: # inference
+        if board[4][2] == ally or board[4][0] == ally:  # inference
             score += 1
     if board[4][3] == enemy:
         score -= 3
@@ -108,7 +108,7 @@ def pawn_turn():
         col-2, col+3)] for r in range(row-2, row+3)]
     if ally == Team.BLACK:
         board.reverse()
-    
+
     # prioritize capture
     if board[3][3] == enemy:  # up and right
         capture(row + forward, col + 1)
@@ -153,7 +153,17 @@ def try_spawn(row, col):
 def smart_spawn():
     global board
     # calculate urgency
-    cols = [(0., 0) for i in range(board_size)]
+    cols = [(0., i) for i in range(board_size)]
+    # better starter
+    for c in range(0, board_size, 2):
+        empty = True
+        for r in range(board_size):
+            if board[r][c] == ally:
+                empty = False
+                break
+        if empty:
+            cols[c] = (cols[c][0] + 1000, c)
+
     for c in range(board_size):
         if c % 2 == 1:  # attack col
             cols[c] = (4., c)
@@ -194,8 +204,8 @@ def overlord_turn():
     board = get_board()
     if ally == Team.BLACK:
         board.reverse()
-    # for r in range(len(board)):
-    #     dlogArray(board[r])
+    for i in range(board_size):
+        dlog_array(board[i])
 
     # Build pawns in weak columns
     smart_spawn()

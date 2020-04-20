@@ -78,7 +78,8 @@ def smart_move():
     #     score += 100
 
     # keep position
-    if row > board_size / 2 - 1:
+    stage = row if ally == Team.WHITE else board_size - 1 - row
+    if stage > board_size / 2 - 1:
         score -= 100
 
     if score >= 0 and board[3][2] == None:

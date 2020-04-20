@@ -74,6 +74,11 @@ for r in range(n):
         label.grid(row=r,column=c)
         labelArr[-1].append(label)
 
+bluePawnLabel = Label(root,text="",padding="20",relief=RAISED)
+bluePawnLabel.grid(row=n,column=n)
+redPawnLabel = Label(root,text="",padding="20",relief=RAISED)
+redPawnLabel.grid(row=n+1,column=n)
+
 
 
 #print(len(processedData[0]))
@@ -84,9 +89,11 @@ counter = -1
 
 
 def refresh(event):
-    global counter,processedData, labelArr, n
+    global counter,processedData, labelArr, n, bluePawnLabel,redPawnLabel
     print(counter)
     counter += 1
+    blue = 0
+    red = 0
     if counter >= len(processedData):
         return
     for r in range(n):
@@ -97,12 +104,15 @@ def refresh(event):
                 target = "     "
             if target == 1:
                 target = "  1  "
+                blue += 1
                 labelArr[r][c].configure(background="BLUE")
             if target == 2:
                 target = "  2  "
+                red += 1
                 labelArr[r][c].configure(background="RED")
             labelArr[r][c].configure(text=target)
-    
+    redPawnLabel.configure(text=str(red))
+    bluePawnLabel.configure(text=str(blue))
     print("Refresh done")
     return
 

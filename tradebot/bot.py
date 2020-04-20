@@ -14,10 +14,11 @@ def dlog(str):
         log(str)
 
 
-def dlogArray(arr):
+def dlog_array(arr):
+    cache = []
     for i in range(len(arr)):
-        arr[i] = str(arr[i])
-    dlog(" ".join(arr))
+        cache.append(str(arr[i]))
+    dlog(" ".join(cache))
 
 
 def argmax(arr):
@@ -57,12 +58,16 @@ def smart_move():
             score += 1
             if board[0][3] == ally:
                 score += 1
-    if board[1][2] == ally and board[0][2] == ally:
-        score += 1
     if board[4][1] == enemy:
         score -= 3
+        if board[4][2] == ally or board[4][0] == ally: # inference
+            score += 1
     if board[4][3] == enemy:
         score -= 3
+        if board[4][2] == ally or board[4][4] == ally:
+            score += 1
+    if score == 0 and board[1][2] == ally and board[0][2] == ally:
+        score += 1
 
     # Don't move forward when acting as support
     if board[3][1] == ally:
@@ -72,14 +77,9 @@ def smart_move():
         if board[4][2] == enemy or board[4][4] == enemy:
             score -= 20
 
-    # strong push
-    # if row % 2 == 1 and board[4][2] == enemy and board[3][2] == None and board[4][1] != enemy and\
-    #         board[4][3] != enemy and board[1][2] == ally and board[0][2] == ally:
-    #     score += 100
-
     # keep position
     stage = row if ally == Team.WHITE else board_size - 1 - row
-    if stage > board_size / 2 - 1:
+    if stage >= board_size / 2 - 1 + col % 2:
         score -= 100
 
     if score >= 0 and board[3][2] == None:
@@ -108,17 +108,17 @@ def pawn_turn():
         col-2, col+3)] for r in range(row-2, row+3)]
     if ally == Team.BLACK:
         board.reverse()
-
+    
     # prioritize capture
-    # TODO: consider giving up attack for good position
-    if board[3][3] == enemy:  # up and right
+    stage = row if ally == Team.WHITE else board_size - 1 - row
+    if col % 2 == 1 and stage == board_size // 2:
+        pass # hold position
+    elif board[3][3] == enemy:  # up and right
         capture(row + forward, col + 1)
-        return
     elif board[3][1] == enemy:  # up and left
         capture(row + forward, col - 1)
-        return
-
-    smart_move()
+    else:
+        smart_move()
 
     # exit
     age += 1
@@ -175,9 +175,7 @@ def smart_spawn():
 
     # spawn
     for v, c in cols:
-        dlog("(" + str(v) + ", " + str(c) + ")")
         if try_spawn(base, c):
-            dlog("spawn in " + str(c))
             break
 
 

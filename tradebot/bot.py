@@ -110,10 +110,7 @@ def pawn_turn():
         board.reverse()
     
     # prioritize capture
-    stage = row if ally == Team.WHITE else board_size - 1 - row
-    if col % 2 == 1 and stage == board_size // 2:
-        pass # hold position
-    elif board[3][3] == enemy:  # up and right
+    if board[3][3] == enemy:  # up and right
         capture(row + forward, col + 1)
     elif board[3][1] == enemy:  # up and left
         capture(row + forward, col - 1)

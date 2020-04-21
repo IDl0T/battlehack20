@@ -32,6 +32,8 @@ def argmax(arr):
 
 
 row, col, forward = 0, 0, 0
+push_wait_time = 10 # tunable
+push_timer = push_wait_time
 
 
 def try_check_space(r, c, board_size):
@@ -45,7 +47,19 @@ def try_check_space(r, c, board_size):
 
 
 def smart_move():
-    score = 0
+    global push_timer
+    score, can_push, no_enemy = 0, False, True
+
+    # prioritize capture
+    if board[3][3] == enemy:  # up and right
+        capture(row + forward, col + 1)
+        return
+    elif board[3][1] == enemy:  # up and left
+        capture(row + forward, col - 1)
+        return
+
+    # calculate ally support - inferred enemy support
+    # score > 0 means good chance to win the trade
     if board[2][1] == ally:
         score += 1
         if board[1][1] == ally:
@@ -60,31 +74,43 @@ def smart_move():
                 score += 1
     if board[4][1] == enemy:
         score -= 3
+        no_enemy = False
         if board[4][2] == ally or board[4][0] == ally:  # inference
             score += 1
     if board[4][3] == enemy:
+        no_enemy = False
         score -= 3
         if board[4][2] == ally or board[4][4] == ally:
             score += 1
-    if score == 0 and board[1][2] == ally and board[0][2] == ally:
-        score += 1
 
-
-    # Don't move forward when acting as support
-    if board[3][1] == ally:
+    # Don't move forward when acting as the only support
+    if board[3][1] == ally and board[1][2] != ally:
         if board[4][2] == enemy or board[4][0] == enemy:
-            score -= 20
-    if board[3][3] == ally:
+            score -= 10
+    if board[3][3] == ally and board[1][2] != ally:
         if board[4][2] == enemy or board[4][4] == enemy:
-            score -= 20
+            score -= 10
+    
+    # can push only with adequate support and good formation
+    if score == 0 and board[1][2] == ally and board[0][2] == ally and \
+            (board[3][1] == ally or board[3][1] == False) and \
+            (board[3][3] == ally or board[3][3] == False):
+        can_push = True
 
+    # count down to push, or follow the ally
+    if can_push:
+        push_timer -= 1
+        if board[3][0] == ally or board[3][4] == ally:  # ally push
+            push_timer = 0  # follow
+        if push_timer == 0 and board[3][2] == None:
+            move_forward()
+            push_timer = push_wait_time
+            return
+    else:
+        push_timer = 10  # reset timer
 
-    # keep position
-    stage = row if ally == Team.WHITE else board_size - 1 - row
-    if stage >= board_size / 2 - 1 + col % 2:
-        score -= 100
-
-    if score >= 0 and board[3][2] == None:
+    # when can't push, be smart
+    if (score > 0 or no_enemy) and board[3][2] == None:
         move_forward()
 
 
@@ -98,10 +124,10 @@ def pawn_init():
 
 
 def pawn_turn():
-    global board, board_size, ally, enemy, row, col, init, forward, age
+    global board, row, col, init, age, push_timer
     # Init
     if init == False:
-        init == True
+        init = True
         pawn_init()
 
     # Position update
@@ -125,8 +151,8 @@ def pawn_turn():
 #=================== OVERLORD CODE ===================#
 
 
-time, pillar_length = 0, 0
-
+time, last_spawn, remaining = 0, 0, 0
+pillar_length = 1 # tunable
 
 def try_spawn(row, col):
     # Make sure that not spawning on dangerous position
@@ -153,9 +179,9 @@ def try_spawn(row, col):
 
 
 def smart_spawn():
-    global board, pillar_length
+    global board, last_spawn, remaining
     # calculate urgency
-    cols = [(0., i) for i in range(board_size)]
+    cols = [[0, i] for i in range(board_size)]
     # better starter
     for c in range(0, board_size, 2):
         empty = True
@@ -164,28 +190,29 @@ def smart_spawn():
                 empty = False
                 break
         if empty:
-            cols[c] = (cols[c][0] + 1000, c)
+            cols[c][0] = cols[c][0] + 1000
 
     for c in range(board_size):
-        if c % 2 == 1:  # attack col
-            cols[c] = (4., c)
+        cols[c][0] = cols[c][0] + 4
+
     for r in range(board_size):
         for c in range(board_size):
             if board[r][c] == ally:
-                if c % 2 == 0:  # defense col
-                    cols[c] = (cols[c][0] - 17, c)
-                else:  # attack col
-                    cols[c] = (cols[c][0] - 1, c)
+                cols[c][0] = cols[c][0] - 1
 
-            elif board[r][c] == enemy:
-                cols[c//2*2] = (cols[c//2*2][0] + 10, c//2*2)
     cols.sort(key=lambda a: a[0], reverse=True)
     base = 0 if ally == Team.WHITE else board_size - 1
 
     # spawn
-    for v, c in cols:
+    if remaining > 0:
+        if try_spawn(base, last_spawn):
+            remaining -= 1
+            return
+    for _, c in cols:
         if try_spawn(base, c):
-            break
+            last_spawn = c
+            remaining = pillar_length - 1
+            return
 
 
 def overlord_init():
@@ -193,14 +220,14 @@ def overlord_init():
     board_size = get_board_size()
     ally = get_team()
     enemy = Team.WHITE if ally == Team.BLACK else Team.BLACK
-    time, pillar_length = 0, 0
+    time, pillar_length = 0, 1
 
 
 def overlord_turn():
     global board, board_size, ally, enemy, init, time, pillar_length
     # Init
     if init == False:
-        init == True
+        init = True
         overlord_init()
 
     # update board
@@ -208,11 +235,15 @@ def overlord_turn():
     if ally == Team.BLACK:
         board.reverse()
 
-    # Build pawns in weak columns
     smart_spawn()
 
     # exit
+    # increase pillar length as time pass
+    if time > 250:
+        pillar_length = 2
+
     time += 1
+    
 
 
 #=================== TURN CODE ===================#

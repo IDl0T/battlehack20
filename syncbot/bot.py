@@ -28,6 +28,7 @@ def argmax(arr):
             maximum, out = v, i
     return out
 
+
 #=================== PAWN CODE ===================#
 
 
@@ -151,8 +152,7 @@ def pawn_turn():
 #=================== OVERLORD CODE ===================#
 
 
-time, last_spawn, remaining = 0, 0, 0
-pillar_length = 1 # tunable
+time = 0
 
 def try_spawn(row, col):
     # Make sure that not spawning on dangerous position
@@ -179,7 +179,7 @@ def try_spawn(row, col):
 
 
 def smart_spawn():
-    global board, last_spawn, remaining
+    global board
     # calculate urgency
     cols = [[0, i] for i in range(board_size)]
     # better starter
@@ -200,18 +200,12 @@ def smart_spawn():
             if board[r][c] == ally:
                 cols[c][0] = cols[c][0] - 1
 
-    cols.sort(key=lambda a: a[0], reverse=True)
+    cols.sort(key=lambda a: a[0] * 2, reverse=True)
     base = 0 if ally == Team.WHITE else board_size - 1
 
     # spawn
-    if remaining > 0:
-        if try_spawn(base, last_spawn):
-            remaining -= 1
-            return
     for _, c in cols:
         if try_spawn(base, c):
-            last_spawn = c
-            remaining = pillar_length - 1
             return
 
 
@@ -239,8 +233,6 @@ def overlord_turn():
 
     # exit
     # increase pillar length as time pass
-    if time > 250:
-        pillar_length = 2
 
     time += 1
     

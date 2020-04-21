@@ -33,7 +33,7 @@ def argmax(arr):
 
 
 row, col, forward = 0, 0, 0
-push_wait_time = 10 # tunable
+push_wait_time = 20 # tunable
 push_timer = push_wait_time
 
 
@@ -93,7 +93,8 @@ def smart_move():
             score -= 10
     
     # can push only with adequate support and good formation
-    if score == 0 and board[1][2] == ally and board[0][2] == ally and \
+    stage = row if ally == Team.WHITE else board_size - 1 - row
+    if stage < 8 and score == 0 and board[1][2] == ally and board[0][2] == ally and \
             (board[3][1] == ally or board[3][1] == False) and \
             (board[3][3] == ally or board[3][3] == False):
         can_push = True
@@ -108,7 +109,7 @@ def smart_move():
             push_timer = push_wait_time
             return
     else:
-        push_timer = 10  # reset timer
+        push_timer = push_wait_time  # reset timer
 
     # when can't push, be smart
     if (score > 0 or no_enemy) and board[3][2] == None:

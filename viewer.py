@@ -120,6 +120,8 @@ def refresh(event):
 
 def refreshBack(event):
     global counter,processedData, labelArr, n
+    blue = 0
+    red = 0
     if counter == 0:
         return
     counter = max(0,counter-1)
@@ -135,10 +137,14 @@ def refreshBack(event):
             if target == 1:
                 target = gameRawData[counter][r][c]
                 labelArr[r][c].configure(background="BLUE")
+                blue += 1
             if target == 2:
                 target = gameRawData[counter][r][c]
                 labelArr[r][c].configure(background="RED")
+                red += 1
             labelArr[r][c].configure(text=target)
+    redPawnLabel.configure(text=str(red))
+    bluePawnLabel.configure(text=str(blue))
     print("Refresh done")
     return
 

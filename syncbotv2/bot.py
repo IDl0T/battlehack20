@@ -167,20 +167,7 @@ def pawn_turn():
         board.reverse()
 
     # prioritize capture
-    if col % 2 == 0:
-        if board[3][3] == enemy:  # up and right
-            capture(row + forward, col + 1)
-        elif board[3][1] == enemy:  # up and left
-            capture(row + forward, col - 1)
-        else:
-            smart_move()
-    else:
-        if board[3][1] == enemy:  # up and left
-            capture(row + forward, col - 1)
-        elif board[3][3] == enemy:  # up and right
-            capture(row + forward, col + 1)
-        else:
-            smart_move()
+    smart_move()
 
     # exit
 

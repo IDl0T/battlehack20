@@ -35,6 +35,7 @@ def argmax(arr):
 row, col, forward = 0, 0, 0
 push_wait_time = 20 # tunable
 push_timer = push_wait_time
+stationary = 0
 
 
 def try_check_space(r, c, board_size):
@@ -48,7 +49,7 @@ def try_check_space(r, c, board_size):
 
 
 def smart_move():
-    global push_timer
+    global push_timer, stationary
     score, can_push, no_enemy = 0, False, True
 
     # prioritize capture
@@ -99,15 +100,20 @@ def smart_move():
         can_push = True
 
     # count down to push, or follow the ally
+    if stationary >= 200: # tunable
+        can_push, push_timer = True, 1 # if being stationaty too long, force move
     if can_push:
         push_timer -= 1
-        if board[3][0] == ally or prev_board[3][4] == ally:  # ally push
+        stationary = 0
+        if board[3][0] == ally and board[4][0] != ally and prev_board[3][0] != ally or \
+            board[3][4] == ally and board[4][3] != ally and prev_board[3][4] != ally:  # ally push
             push_timer = 0  # follow
-        if push_timer == 0 and board[3][2] == None:
+        if push_timer <= 0 and board[3][2] == None:
             move_forward()
             push_timer = push_wait_time
             return
     else:
+        stationary += 1
         push_timer = push_wait_time  # reset timer
 
     # when can't push, be smart
@@ -116,12 +122,12 @@ def smart_move():
 
 
 def pawn_init():
-    global board_size, ally, enemy, forward, age
+    global board_size, ally, enemy, forward, age, stationary
     board_size = get_board_size()
     ally = get_team()
     enemy = Team.WHITE if ally == Team.BLACK else Team.BLACK
     forward = 1 if ally == Team.WHITE else -1
-    age = 0
+    age, stationary = 0, 0
     prev_board = [[None for j in range(5)] for i in range(5)]
 
 

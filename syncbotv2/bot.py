@@ -32,8 +32,8 @@ def argmax(arr):
 #=================== PAWN CODE ===================#
 
 
-row, col, forward = 0, 0, 0
-push_wait_time = 20 # tunable
+row, col, forward, age = 0, 0, 0, 0
+push_wait_time = 30 # tunable
 push_timer = push_wait_time
 stationary = 0
 

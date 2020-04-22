@@ -53,12 +53,30 @@ def smart_move():
     score, can_push, no_enemy = 0, False, True
 
     # prioritize capture
-    if board[3][3] == enemy:  # up and right
-        capture(row + forward, col + 1)
+    if board[3][3] == enemy or board[3][1] == enemy:
+        #Check which enemy is acting as support
+        if board[3][3] == enemy and board[3][1] == enemy:
+            scoreLeft = 0
+            scoreRight = 0
+            if board[2][0] == enemy:
+                scoreLeft += 1
+            if board[2][4] == enemy:
+                scoreRight += 1
+            if scoreLeft > scoreRight:
+                capture(row + forward, col - 1)
+            elif scoreRight > scoreLeft:
+                capture(row + forward, col + 1)
+            else:
+                if col % 2 == 0:
+                    capture(row + forward, col + 1)
+                else:
+                    capture(row + forward, col - 1)
+        elif board[3][3] == enemy:
+            capture(row + forward, col + 1)
+        else:
+            capture(row + forward, col - 1)
         return
-    elif board[3][1] == enemy:  # up and left
-        capture(row + forward, col - 1)
-        return
+
 
     # calculate ally support - inferred enemy support
     # score > 0 means good chance to win the trade

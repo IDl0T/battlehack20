@@ -33,7 +33,7 @@ def argmax(arr):
 
 
 row, col, forward, age = 0, 0, 0, 0
-push_wait_time = 30 # tunable
+push_wait_time = 25 # tunable
 push_timer = push_wait_time
 stationary = 0
 
@@ -134,28 +134,37 @@ def pawn_init():
 def pawn_turn():
     global board, row, col, init, age, push_timer, prev_board
     # Init
+
     if init == False:
         init = True
         pawn_init()
 
     # Position update
     row, col = get_location()
+    age += 1
+    prev_board = board
     board = [[try_check_space(r, c, board_size) for c in range(
         col-2, col+3)] for r in range(row-2, row+3)]
     if ally == Team.BLACK:
         board.reverse()
 
     # prioritize capture
-    if board[3][3] == enemy:  # up and right
-        capture(row + forward, col + 1)
-    elif board[3][1] == enemy:  # up and left
-        capture(row + forward, col - 1)
+    if col % 2 == 0:
+        if board[3][3] == enemy:  # up and right
+            capture(row + forward, col + 1)
+        elif board[3][1] == enemy:  # up and left
+            capture(row + forward, col - 1)
+        else:
+            smart_move()
     else:
-        smart_move()
+        if board[3][1] == enemy:  # up and left
+            capture(row + forward, col - 1)
+        elif board[3][3] == enemy:  # up and right
+            capture(row + forward, col + 1)
+        else:
+            smart_move()
 
     # exit
-    age += 1
-    prev_board = board
 
 #=================== OVERLORD CODE ===================#
 

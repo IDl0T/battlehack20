@@ -1,4 +1,4 @@
-# battlehack20-scaffold
+# [Click to see our postmortem](https://aiwaffle.github.io/AIwaffle-blog/competition/2020/04/30/Battlehack2020-postmortem.html)
 
 Read more about Battlehack 2020 at https://bh2020.battlecode.org!
 
